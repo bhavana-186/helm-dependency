@@ -29,7 +29,7 @@ jobs:
 
       - name: Commit on a new branch
         env:
-          BRANCH: update-readme-${{ github.run_number }}
+          BRANCH: update-readme-${{ github.run_id }}-${{ github.run_attempt }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -41,7 +41,7 @@ jobs:
       - name: Open draft pull request
         env:
           GH_TOKEN: ${{ github.token }}
-          BRANCH: update-readme-${{ github.run_number }}
+          BRANCH: update-readme-${{ github.run_id }}-${{ github.run_attempt }}
         run: |
           gh pr create \
             --base main \

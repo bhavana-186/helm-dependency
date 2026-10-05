@@ -1,0 +1,51 @@
+name: Update README via PR
+
+on:
+  workflow_dispatch:
+    inputs:
+      text:
+        description: 'Text to add to README.md'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Append input text to README.md
+        env:
+          INPUT_TEXT: ${{ inputs.text }}
+        run: |
+          printf '\n%s\n' "$INPUT_TEXT" >> README.md
+
+      - name: Commit on a new branch
+        env:
+          BRANCH: update-readme-${{ github.run_number }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add README.md
+          git commit -m "Update README.md via workflow_dispatch"
+          git push origin "$BRANCH"
+
+      - name: Open draft pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: update-readme-${{ github.run_number }}
+        run: |
+          gh pr create \
+            --base main \
+            --head "$BRANCH" \
+            --title "Update README.md" \
+            --body "Automated draft PR opened by the update-readme-pr workflow with the text provided at dispatch time." \
+            --draft
